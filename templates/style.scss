@@ -1,0 +1,19 @@
+@font-face {
+  font-family: "ProFont";
+  src: url("ProFont.ttf")
+}
+
+$bg_dark: #101418;
+$fg_dark: #FFF9EB;
+
+.dark {
+  color: $fg_dark;
+  background-color: $bg_dark;
+}
+
+body {
+  font-family: "ProFont";
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}

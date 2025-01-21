@@ -1,0 +1,21 @@
+[package]
+name = "toby_ssg"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "toby_ssg"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.95"
+askama = "0.12.1"
+axum = "0.8.1"
+grass = "0.13.4"
+markdown = "1.0.0-alpha.21"
+serde = { version = "1.0.217", features = ["derive"] }
+tokio = { version = "1.43.0", features = ["full"] }
+tower-http = { version = "0.6.2", features = ["fs"] }
+tower-livereload = "0.9.5"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
