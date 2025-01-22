@@ -1,3 +1,8 @@
+use std::{
+    fs::{self, File},
+    io::Write,
+};
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -26,4 +31,22 @@ where
     fn from(err: E) -> Self {
         Self(err.into())
     }
+}
+
+pub fn init_file(path: &str, copy: &[u8]) {
+    if fs::exists(path).is_ok_and(|x| !x) {
+        let mut file = File::create(path).unwrap();
+        file.write_all(copy).unwrap();
+    }
+}
+
+pub fn init_dir(path: &str) {
+    if fs::exists(path).is_ok_and(|x| !x) {
+        fs::create_dir(path).unwrap();
+    }
+}
+
+pub fn is_directory_empty(directory: &str) -> bool {
+    let mut entries = fs::read_dir(directory).expect("Could not read directory");
+    entries.next().is_none()
 }
