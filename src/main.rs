@@ -16,7 +16,7 @@ async fn main() {
     match query.as_str() {
         "init" => init(),
         "serve" => serve().await,
-        "render" => render(),
+        "render" => render().await.expect("Could Not Render"),
         _ => panic!("Not a valid argument {}", { query }),
     }
 }

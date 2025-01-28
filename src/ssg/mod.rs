@@ -17,7 +17,8 @@ struct BaseTemplate {
     content: String,
 }
 
-// basic handler that responds with a static string
+// basic handler that responds with a static string[]
+#[axum::debug_handler]
 pub async fn render() -> Result<(), AppError> {
     validate_working_directory();
     render_css()?;

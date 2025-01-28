@@ -11,9 +11,10 @@ pub async fn serve() {
     tracing_subscriber::fmt::init();
 
     // build our application with a route
+
     let app = Router::new()
         // `GET /` goes to `root`
-        .route("/render", get(render()))
+        .route("/render", get(render))
         .fallback_service( get(handler))
         .layer(LiveReloadLayer::new());
 
