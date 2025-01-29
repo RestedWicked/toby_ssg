@@ -1,3 +1,10 @@
+---
+title: Test
+publish: true
+tags:
+    - Index
+    - Home
+---
 # Hello World
 Welcome to my blog :3
 
