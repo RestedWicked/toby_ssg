@@ -20,6 +20,7 @@ struct Matter {
 #[template(path = "base.html")]
 struct BaseTemplate {
     title: String,
+    tags: Vec<String>,
     content: String,
 }
 
@@ -124,6 +125,7 @@ fn render_html() -> anyhow::Result<()> {
                 let mut output = File::create(html_file_path)?;
                 let template = BaseTemplate {
                     title: frontmatter.title,
+                    tags: frontmatter.tags,
                     content,
                 };
                 output.write_all(template.render()?.as_bytes())?;

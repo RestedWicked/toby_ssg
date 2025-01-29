@@ -9,7 +9,12 @@
   </head>
   <body class="dark">
     <header>
-      <h1>RestedWicked</h1>
+      <h1>RestedWicked - {{ title }}</h1>
+      <ul>
+        {% for tag in tags %}
+        <li> {{ tag }} </li>
+        {% endfor %}
+      </ul>
       <p>I am just writing code here lmaoo plz work</p>
     </header>
     <article>
