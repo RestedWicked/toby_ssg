@@ -4,87 +4,9 @@ pub mod ssg;
 
 use std::{
     fs::{self, File},
-    io::Write, path::PathBuf,
+    io::Write,
+    path::PathBuf,
 };
-
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
-
-// Make our own error that wraps `anyhow::Error`.
-#[derive(Debug)]
-pub struct AppError(anyhow::Error);
-
-// Tell axum how to convert `AppError` into a response.
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
-    }
-}
-
-// This enables using `?` on functions that return `Result<_, anyhow::Error>` to turn them into
-// `Result<_, AppError>`. That way you don't need to do that manually.
-impl<E> From<E> for AppError
-where
-    E: Into<anyhow::Error>,
-{
-    fn from(err: E) -> Self {
-        Self(err.into())
-    }
-}
-
-pub fn init_file(path: &str, copy: &[u8]) {
-    if fs::exists(path).is_ok_and(|x| !x) {
-        let mut file = File::create(path).unwrap();
-        file.write_all(copy).unwrap();
-    }
-}
-
-pub fn create_note(note_name: &str) {
-    validate_working_directory();
-    let note = include_bytes!("../content/template.md");
-
-    let mut path = PathBuf::new();
-    path.push("content");
-    path.push(note_name);
-    path.set_extension("md");
-
-    let prefix = &path.parent().unwrap().to_path_buf();
-
-    if fs::exists(&prefix).is_ok_and(|x| !x) {
-        fs::create_dir_all(prefix).unwrap();
-    }
-    
-    let mut count = 1;
-    loop {
-        if fs::exists(&path).is_ok_and(|x| x) {
-            let file = format!("{note_name}_{count}.md");
-            path.set_file_name(file);
-            count += 1;
-        } else {
-            break
-        }
-    }
-    let mut file = File::create(path).unwrap();
-    file.write_all(note).unwrap();
-}
-
-pub fn init_dir(path: &str) {
-    if fs::exists(path).is_ok_and(|x| !x) {
-        fs::create_dir(path).unwrap();
-    }
-}
-
-pub fn is_directory_empty(directory: &str) -> bool {
-    let mut entries = fs::read_dir(directory).expect("Could not read directory");
-    entries.next().is_none()
-}
-
 
 // We need to validate the current working directory.
 // For a directory to be valid we need:
@@ -96,7 +18,7 @@ pub fn validate_working_directory() {
 }
 
 // wanted an empty argument for every function that wasn't init lmaoo
-pub fn validate_working_directory_init(is_init: bool) {
+fn validate_working_directory_init(is_init: bool) {
     let md = fs::metadata(".").unwrap();
     let permissions = md.permissions();
     if permissions.readonly() {
@@ -110,6 +32,24 @@ pub fn validate_working_directory_init(is_init: bool) {
         if !is_init {
             panic!("Toby SSG has not been initilized");
         }
+    }
+}
+
+pub fn is_directory_empty(directory: &str) -> bool {
+    let mut entries = fs::read_dir(directory).expect("Could not read directory");
+    entries.next().is_none()
+}
+
+pub fn init_file(path: &str, copy: &[u8]) {
+    if fs::exists(path).is_ok_and(|x| !x) {
+        let mut file = File::create(path).unwrap();
+        file.write_all(copy).unwrap();
+    }
+}
+
+pub fn init_dir(path: &str) {
+    if fs::exists(path).is_ok_and(|x| !x) {
+        fs::create_dir(path).unwrap();
     }
 }
 
@@ -131,4 +71,33 @@ pub fn init() {
     init_file("templates/base.html", base_template);
     init_file("templates/style.scss", style);
     init_file("content/index.md", index_md);
+}
+
+pub fn create_note(note_name: &str) {
+    validate_working_directory();
+    let note = include_bytes!("../content/template.md");
+
+    let mut path = PathBuf::new();
+    path.push("content");
+    path.push(note_name);
+    path.set_extension("md");
+
+    let prefix = &path.parent().unwrap().to_path_buf();
+
+    if fs::exists(prefix).is_ok_and(|x| !x) {
+        fs::create_dir_all(prefix).unwrap();
+    }
+
+    let mut count = 1;
+    loop {
+        if fs::exists(&path).is_ok_and(|x| x) {
+            let file = format!("{note_name}_{count}.md");
+            path.set_file_name(file);
+            count += 1;
+        } else {
+            break;
+        }
+    }
+    let mut file = File::create(path).unwrap();
+    file.write_all(note).unwrap();
 }

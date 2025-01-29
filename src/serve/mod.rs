@@ -1,4 +1,10 @@
-use axum::{body::Body, extract::Request, http::{Response, StatusCode, Uri}, routing::get, Router};
+use axum::{
+    body::Body,
+    extract::Request,
+    http::{Response, StatusCode, Uri},
+    routing::get,
+    Router,
+};
 use tower::ServiceExt;
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
@@ -15,7 +21,7 @@ pub async fn serve() {
     let app = Router::new()
         // `GET /` goes to `root`
         .route("/render", get(render))
-        .fallback_service( get(handler))
+        .fallback_service(get(handler))
         .layer(LiveReloadLayer::new());
 
     // run our app with hyper, listening globally on port 3000

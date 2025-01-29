@@ -4,11 +4,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use askama::Template;
+use askama_axum::Template;
 use glob::glob;
 use markdown::{mdast::Node, to_html_with_options, to_mdast, Constructs, Options, ParseOptions};
 
-use crate::{validate_working_directory, AppError};
+use crate::validate_working_directory;
 
 struct Matter {
     title: String,
@@ -26,11 +26,58 @@ struct BaseTemplate {
 
 // basic handler that responds with a static string[]
 #[axum::debug_handler]
-pub async fn render() -> Result<(), AppError> {
+pub async fn render() {
     validate_working_directory();
-    render_css()?;
-    render_html()?;
-    Ok(())
+    render_css();
+    render_html();
+}
+
+fn render_css() {
+    let mut file = File::create("output/static/style.css").expect("Could not create style.css");
+    let css = grass::from_path("templates/style.scss", &grass::Options::default()).expect("Could not read style.scss");
+    file.write_all(css.as_bytes()).expect("Could not write to css");
+}
+
+fn render_html() {
+    let options = markdown_options();
+    for entry in glob("content/**/*.md").expect("Failed to read glob pattern") {
+        match entry {
+            Ok(path) => {
+                // Reading the each markdown file and verifying if its valid to render it.
+                let mut input = File::open(&path).expect("Could not open markdown file");
+                let mut content = String::new();
+
+                input.read_to_string(&mut content).expect("Could not read to string");
+                let frontmatter = parse_frontmatter(&content);
+                if frontmatter.is_none() {
+                    continue;
+                }
+
+                // Frontmatter
+                let frontmatter = frontmatter.unwrap();
+                if !frontmatter.publish {
+                    continue;
+                }
+
+                let (html_file_path, prefix) = html_path(&path);
+
+                if fs::exists(&prefix).is_ok_and(|x| !x) {
+                    fs::create_dir_all(prefix).unwrap();
+                }
+
+                content = to_html_with_options(&content, &options).unwrap();
+
+                let mut output = File::create(html_file_path).expect("Could not create html file");
+                let template = BaseTemplate {
+                    title: frontmatter.title,
+                    tags: frontmatter.tags,
+                    content,
+                };
+                output.write_all(template.render().expect("Could not render template").as_bytes()).expect("Could not write template");
+            }
+            Err(e) => println!("{:?}", e),
+        }
+    }
 }
 
 fn parse_options() -> ParseOptions {
@@ -85,56 +132,6 @@ fn parse_frontmatter(content: &str) -> Option<Matter> {
         }
     }
     None
-}
-
-fn render_css() -> anyhow::Result<()> {
-    let mut file = File::create("output/static/style.css")?;
-    let css = grass::from_path("templates/style.scss", &grass::Options::default())?;
-    file.write_all(css.as_bytes())?;
-    Ok(())
-}
-
-fn render_html() -> anyhow::Result<()> {
-    let options = markdown_options();
-    for entry in glob("content/**/*.md").expect("Failed to read glob pattern") {
-        match entry {
-            Ok(path) => {
-                // Reading the each markdown file and verifying if its valid to render it.
-                let mut input = File::open(&path)?;
-                let mut content = String::new();
-
-                input.read_to_string(&mut content)?;
-                let frontmatter = parse_frontmatter(&content);
-                if frontmatter.is_none() { break }
-
-                // Frontmatter
-                let frontmatter = frontmatter.unwrap();
-                if !frontmatter.publish {
-                    break;
-                }
-                println!("{:#?}", frontmatter.tags);
-
-                let (html_file_path, prefix) = html_path(&path);
-
-                if fs::exists(&prefix).is_ok_and(|x| !x) {
-                    fs::create_dir_all(prefix).unwrap();
-                }
-
-                content = to_html_with_options(&content, &options).unwrap();
-
-                let mut output = File::create(html_file_path)?;
-                let template = BaseTemplate {
-                    title: frontmatter.title,
-                    tags: frontmatter.tags,
-                    content,
-                };
-                output.write_all(template.render()?.as_bytes())?;
-            }
-            Err(e) => println!("{:?}", e),
-        }
-    }
-
-    Ok(())
 }
 
 fn html_path(path: &Path) -> (PathBuf, PathBuf) {

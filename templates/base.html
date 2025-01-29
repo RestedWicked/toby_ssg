@@ -10,11 +10,13 @@
   <body class="dark">
     <header>
       <h1>RestedWicked - {{ title }}</h1>
-      <ul>
+      {% if tags.len() > 0 %}
+      <ul class="tags">
         {% for tag in tags %}
         <li> {{ tag }} </li>
         {% endfor %}
       </ul>
+      {%- endif %}
       <p>I am just writing code here lmaoo plz work</p>
     </header>
     <article>
