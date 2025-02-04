@@ -8,8 +8,7 @@ name = "toby_ssg"
 path = "src/lib.rs"
 
 [dependencies]
-askama = { version = "0.12.1", features = ["with-axum"] }
-askama_axum = "0.4.0"
+askama = { version = "0.12.1" }
 axum = { version = "0.8.1", features = ["macros"]}
 glob = "0.3.2"
 grass = "0.13.4"

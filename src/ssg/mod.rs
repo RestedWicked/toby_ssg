@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use askama_axum::Template;
+use askama::Template;
 use glob::glob;
 use markdown::{mdast::Node, to_html_with_options, to_mdast, Constructs, Options, ParseOptions};
 
@@ -34,8 +34,10 @@ pub async fn render() {
 
 fn render_css() {
     let mut file = File::create("output/static/style.css").expect("Could not create style.css");
-    let css = grass::from_path("templates/style.scss", &grass::Options::default()).expect("Could not read style.scss");
-    file.write_all(css.as_bytes()).expect("Could not write to css");
+    let css = grass::from_path("templates/style.scss", &grass::Options::default())
+        .expect("Could not read style.scss");
+    file.write_all(css.as_bytes())
+        .expect("Could not write to css");
 }
 
 fn render_html() {
@@ -47,37 +49,75 @@ fn render_html() {
                 let mut input = File::open(&path).expect("Could not open markdown file");
                 let mut content = String::new();
 
-                input.read_to_string(&mut content).expect("Could not read to string");
-                let frontmatter = parse_frontmatter(&content);
-                if frontmatter.is_none() {
+                input
+                    .read_to_string(&mut content)
+                    .expect("Could not read to string");
+
+                if let Some(frontmatter) = parse_frontmatter(&content) {
+                    if !frontmatter.publish {
+                        continue;
+                    }
+
+                    let (html_file_path, prefix) = html_path(&path);
+
+                    if fs::exists(&prefix).is_ok_and(|x| !x) {
+                        fs::create_dir_all(prefix).unwrap();
+                    }
+
+                    content = to_html_with_options(&content, &options).unwrap();
+
+                    let mut output =
+                        File::create(html_file_path).expect("Could not create html file");
+                    let template = BaseTemplate {
+                        title: frontmatter.title,
+                        tags: frontmatter.tags,
+                        content,
+                    };
+                    output
+                        .write_all(
+                            template
+                                .render()
+                                .expect("Could not render template")
+                                .as_bytes(),
+                        )
+                        .expect("Could not write template");
+                } else {
                     continue;
                 }
-
-                // Frontmatter
-                let frontmatter = frontmatter.unwrap();
-                if !frontmatter.publish {
-                    continue;
-                }
-
-                let (html_file_path, prefix) = html_path(&path);
-
-                if fs::exists(&prefix).is_ok_and(|x| !x) {
-                    fs::create_dir_all(prefix).unwrap();
-                }
-
-                content = to_html_with_options(&content, &options).unwrap();
-
-                let mut output = File::create(html_file_path).expect("Could not create html file");
-                let template = BaseTemplate {
-                    title: frontmatter.title,
-                    tags: frontmatter.tags,
-                    content,
-                };
-                output.write_all(template.render().expect("Could not render template").as_bytes()).expect("Could not write template");
             }
             Err(e) => println!("{:?}", e),
         }
     }
+}
+
+fn validate_markdown() -> (Vec<PathBuf>, Vec<Matter>) {
+    let mut valid_entries: Vec<PathBuf> = Vec::new();
+    let mut valid_frontmatter: Vec<Matter> = Vec::new();
+
+    for entry in glob("content/**/*.md").expect("Failed to read glob pattern") {
+        match entry {
+            Ok(path) => {
+                // Reading the each markdown file and verifying if its valid to render it.
+                let mut input = File::open(&path).expect("Could not open markdown file");
+                let mut content = String::new();
+
+                input
+                    .read_to_string(&mut content)
+                    .expect("Could not read to string");
+                if let Some(frontmatter) = parse_frontmatter(&content) {
+                    if !frontmatter.publish {
+                        continue;
+                    }
+                    valid_entries.push(path);
+                    valid_frontmatter.push(frontmatter);
+                } else {
+                    continue;
+                }
+            }
+            Err(e) => println!("{:?}", e),
+        }
+    }
+    (valid_entries, valid_frontmatter)
 }
 
 fn parse_options() -> ParseOptions {
