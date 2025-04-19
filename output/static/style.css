@@ -13,3 +13,9 @@ body {
   align-items: center;
   flex-direction: column;
 }
+
+.tags {
+  display: flex;
+  flex-direction: row;
+  list-style-type: none;
+}

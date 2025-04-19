@@ -1,0 +1,7 @@
+{% if links.len() > 0 %}
+<ul class="links">
+  {% for i in 0..links.len() %}
+  <li> <a href="/{{ links[i] }}">{{ titles[i] }} </a></li>
+  {% endfor %}
+</ul>
+{%- endif %}
