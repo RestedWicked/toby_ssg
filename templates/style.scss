@@ -1,6 +1,11 @@
 @font-face {
+  font-family: "WebFont";
+  src: url("/static/font/webfont.ttf")
+}
+
+@font-face {
   font-family: "ProFont";
-  src: url("ProFont.ttf")
+  src: url("/static/font/ProFont.ttf")
 }
 
 $bg_dark: #101418;
@@ -11,15 +16,45 @@ $fg_dark: #FFF9EB;
   background-color: $bg_dark;
 }
 
+html {
+  font-size: 20px;
+}
+
+h1 h2 h3 h4 h5 h6 {
+  font-family: "WebFont";
+  font-size: "2rem";
+}
+
 body {
+  font-size: 1rem;
   font-family: "ProFont";
   display: flex;
   align-items: center;
   flex-direction: column;
 }
 
+code {
+  font-family: "ProFont";
+}
+
 .tags {
   display: flex;
   flex-direction: row;
   list-style-type: none;
+}
+
+.container {
+  display: flex;
+}
+
+.left {
+  margin-left: 2vw;
+  margin-right: 2vw;
+  max-width: 20vw;
+}
+
+.center {
+  margin-left: 2vw;
+  margin-right: 2vw;
+  max-width: 40vw;
 }

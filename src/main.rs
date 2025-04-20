@@ -16,7 +16,9 @@ async fn main() {
     match query.as_str() {
         "init" => init(),
         "serve" => serve().await,
-        "render" => render().await,
+        "render" => {
+            let _ = render().await;
+        },
         "note" => {
             if args.len() == 3 {
                 create_note(&args[2]);

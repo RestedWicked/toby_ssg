@@ -2,7 +2,7 @@ use axum::{
     body::Body,
     extract::Request,
     http::{Response, StatusCode, Uri},
-    routing::get,
+    routing::{get, post},
     Router,
 };
 use tower::ServiceExt;
@@ -20,7 +20,7 @@ pub async fn serve() {
 
     let app = Router::new()
         // `GET /` goes to `root`
-        .route("/render", get(render))
+        .route("/render", post(render))
         .fallback_service(get(handler))
         .layer(LiveReloadLayer::new());
 

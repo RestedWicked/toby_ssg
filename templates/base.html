@@ -5,19 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/styles/style.css">
+    <link rel="stylesheet" href="/static/styles/default.min.css">
+    <link rel="icon" href="/static/images/RW_FLOWER.svg">
+    <script src="/static/scripts/highlight.min.js"></script>
   </head>
+
   <body class="dark">
-    <header>
-      <h1>RestedWicked - {{ title }}</h1>
-      <p>I am just writing code here lmaoo plz work</p>
-    </header>
-    <article>
-    {{ content|safe }}
-    </article>
-    <div>
-    {{ links|safe }}
+    <form action="/render" method="post">
+      <button>Render</button>
+    </form>
+
+    <div class="container">
+
+      <div class="left">
+        <h1>RestedWicked</h1>
+        {{ links|safe }}
+      </div>
+
+      <div class="center">
+        <header>
+          <h1>{{ title }}</h1>
+        </header>
+
+        <article>
+          {{ content|safe }}
+        </article>
+      </div>
+
     </div>
+
     <footer>
       {% if tags.len() > 0 %}
       <ul class="tags">
@@ -27,6 +44,7 @@
       </ul>
       {%- endif %}
     </footer>
+
+  <script>hljs.highlightAll();</script>
   </body>
 </html>
-

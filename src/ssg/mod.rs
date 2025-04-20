@@ -6,6 +6,7 @@ use std::{
 };
 
 use askama::Template;
+use axum::http::StatusCode;
 use glob::glob;
 use markdown::{mdast::Node, to_html_with_options, to_mdast, Constructs, Options, ParseOptions};
 
@@ -35,14 +36,15 @@ struct DirectoryTemplate {
 
 // basic handler that responds with a static string[]
 #[axum::debug_handler]
-pub async fn render() {
+pub async fn render() -> StatusCode {
     validate_working_directory();
     render_css();
     render_html();
+    StatusCode::NO_CONTENT
 }
 
 fn render_css() {
-    let mut file = File::create("output/static/style.css").expect("Could not create style.css");
+    let mut file = File::create("output/static/styles/style.css").expect("Could not create style.css");
     let css = grass::from_path("templates/style.scss", &grass::Options::default())
         .expect("Could not read style.scss");
     file.write_all(css.as_bytes())
