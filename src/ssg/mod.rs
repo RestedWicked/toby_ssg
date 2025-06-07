@@ -6,7 +6,7 @@ use std::{
 };
 
 use askama::Template;
-use axum::http::StatusCode;
+use axum::http::{header, HeaderMap, StatusCode};
 use glob::glob;
 use markdown::{mdast::Node, to_html_with_options, to_mdast, Constructs, Options, ParseOptions};
 
@@ -36,11 +36,14 @@ struct DirectoryTemplate {
 
 // basic handler that responds with a static string[]
 #[axum::debug_handler]
-pub async fn render() -> StatusCode {
+pub async fn render() -> (StatusCode, HeaderMap) {
     validate_working_directory();
     render_css();
     render_html();
-    StatusCode::NO_CONTENT
+    let mut headers = HeaderMap::new();
+    headers.insert(header::REFRESH, "1".parse().unwrap());
+    headers.insert("url", "/".parse().unwrap());
+    (StatusCode::NO_CONTENT, headers)
 }
 
 fn render_css() {
