@@ -32,7 +32,7 @@ These are the features that link several generated pages into a single cohesive 
 - Distinction between Blogs and Notes
 
 ```rust
-println!("Hello, Rach!");
+println!("Hello, Everyone!");
 ```
 
 AAAAAAABBBBBBBBBBBB
